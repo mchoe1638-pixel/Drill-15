@@ -5,6 +5,9 @@ class Grass:
         self.image = load_image('grass.png')
         self.ruler_image = load_image('ruler.png')
 
+    def get_bb(self):
+        return 0, 0, 1600-1, 50
+
     def update(self):
         pass
 

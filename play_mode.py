@@ -20,18 +20,24 @@ def handle_events():
             return
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.quit()
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_b:
+            game_world.toggle_bb()
         else:
             boy.handle_event(event)
 
 
 def init():
-    global boy
+    global boy, balls
 
     boy = Boy()
-    game_world.add_oject(boy)
+    game_world.add_oject(boy, 1)
 
     grass = Grass()
     game_world.add_oject(grass, 0)
+
+    balls = [Ball(random.randint(100, 1600 - 100), 60, 0) for _ in range(30)]
+    game_world.add_objects(balls, 1)
+
 
 
 def pause():
@@ -50,7 +56,9 @@ def finish():
 
 def update():
     game_world.update()
-
+    for ball in balls:
+        if game_world.collide(boy, ball):
+            print('COLLISION boy : ball')
 def render():
     clear_canvas()
     game_world.render()

@@ -31,6 +31,19 @@ RUN_FRAMES_PER_SECOND = RUN_SPEED_MPS / STRIDE_LENGTH_M * RUN_FRAMES_PER_STRIDE 
 
 
 
+# 상태별 충돌 박스: (left, bottom, right, top)를 소년 위치(boy.x, boy.y) 기준 오프셋으로 적었다.
+# 100x100 스프라이트에서 실제로 불투명한 영역을 측정해 맞춘 값이다.
+IDLE_BB = (-20, -36, 20, 43)
+RUN_BB = (-33, -37, 33, 32)
+# Sleep 은 idle 오른쪽 0번 프레임만 90도 눕혀 (x, y - 30)에 그린다. 머리는 바라보는 방향의 반대쪽에 놓인다.
+SLEEP_BB = {1: (-42, -49, 36, -14), -1: (-36, -49, 42, -14)}  # face_dir -> 박스
+
+
+def shift_bb(boy, bb):
+    left, bottom, right, top = bb
+    return boy.x + left, boy.y + bottom, boy.x + right, boy.y + top
+
+
 class Idle:
     def enter(self, boy):
         boy.idle_started_at = get_time()
@@ -45,6 +58,9 @@ class Idle:
     def draw(self, boy):
         row = 300 if boy.face_dir == 1 else 200
         boy.image.clip_draw(boy.frame * 100, row, 100, 100, boy.x, boy.y)
+
+    def get_bb(self, boy):
+        return shift_bb(boy, IDLE_BB)
 
     def space(self, boy):
         boy.fire_ball()
@@ -68,6 +84,9 @@ class Sleep:
             angle, flip, boy.x, boy.y - 30, 100, 100
         )
 
+    def get_bb(self, boy):
+        return shift_bb(boy, SLEEP_BB[boy.face_dir])
+
     def space(self, boy):
         boy.wake_up()
 
@@ -88,6 +107,9 @@ class Run:
         row = 100 if boy.face_dir == 1 else 0
         # 그림을 선택할 때만 소수 부분을 버린다.
         boy.image.clip_draw(int(boy.frame) * 100, row, 100, 100, boy.x, boy.y)
+
+    def get_bb(self, boy):
+        return shift_bb(boy, RUN_BB)
 
     def space(self, boy):
         boy.fire_ball()
@@ -127,6 +149,9 @@ class Boy:
             initial='IDLE',
             auto_transitions=False,
         )
+
+    def get_bb(self):
+        return self.states[self.state].get_bb(self)
 
     def on_enter_IDLE(self):
         self.states['IDLE'].enter(self)
@@ -182,3 +207,4 @@ class Boy:
     def draw(self):
         self.states[self.state].draw(self)
         self.font.draw(self.x - 10, self.y + 50, f'{self.ball_count:02d}', (255, 255, 0))
+        game_world.draw_bb(self)
