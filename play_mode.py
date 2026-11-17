@@ -56,9 +56,11 @@ def finish():
 
 def update():
     game_world.update()
-    for ball in balls:
+    for ball in balls[:]:  # 순회 중에 제거해도 건너뛰는 공이 없도록 복사본으로 돈다
         if game_world.collide(boy, ball):
             print('COLLISION boy : ball')
+            game_world.remove_object(ball)
+            balls.remove(ball)
 def render():
     clear_canvas()
     game_world.render()

@@ -7,7 +7,7 @@ import game_framework
 LAUNCH_SPEED_X = 300.0
 LAUNCH_SPEED_Y = 300.0
 GRAVITY = 9.8 * (10.0 / 0.3)  # 9.8 m/s²를 픽셀/s²로 변환
-GROUND_Y = 40
+GROUND_Y = 50  # 잔디 윗면 높이 (Grass.get_bb 의 top 과 같다)
 
 
 class Ball:
@@ -34,9 +34,11 @@ class Ball:
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt - 0.5 * GRAVITY * dt ** 2
         self.velocity_y -= GRAVITY * dt
-        if (self.x < -self.radius or self.x > get_canvas_width() + self.radius
-                or self.y - self.radius <= GROUND_Y):
-            game_world.remove_object(self)
+        if self.x < -self.radius or self.x > get_canvas_width() + self.radius:
+            game_world.remove_object(self)  # 화면 밖으로 나가면 사라진다
+        elif self.y - self.radius <= GROUND_Y:
+            self.y = GROUND_Y + self.radius  # 잔디 위에 얹히고
+            self.stopped = True  # 바닥에 놓인 공처럼 멈춘다
 
     def draw(self):
         self.image.draw(self.x, self.y)
