@@ -27,7 +27,7 @@ def handle_events():
 
 
 def init():
-    global boy, balls
+    global boy
 
     boy = Boy()
     game_world.add_oject(boy, 1)
@@ -56,11 +56,10 @@ def finish():
 
 def update():
     game_world.update()
-    for ball in balls[:]:  # 순회 중에 제거해도 건너뛰는 공이 없도록 복사본으로 돈다
-        if game_world.collide(boy, ball):
+    for o in game_world.world[1][:]:  # 던진 공까지 월드의 모든 공이 대상 (제거해도 되도록 복사본으로 순회)
+        if isinstance(o, Ball) and game_world.collide(boy, o):
             print('COLLISION boy : ball')
-            game_world.remove_object(ball)
-            balls.remove(ball)
+            game_world.remove_object(o)
 def render():
     clear_canvas()
     game_world.render()
